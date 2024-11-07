@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Launcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0;
+            background: linear-gradient(135deg, #4a90e2, #9013fe);
+            color: #333;
+            height: 100vh;
+            align-items: flex-start;
+        }
+
+        .container, .admin-container, .password-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .container.active, .admin-container.active, .password-container.active {
+            display: flex;
+        }
+
+        .password-container {
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            width: 300px;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            width: 200px;
+            margin: 20px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-y: auto; /* Adds vertical scrollbar if content overflows */
+            max-height: 90vh; /* Limits the height of the sidebar to 90% of the viewport height */
+        }
+
+        .sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar a {
+            display: block;
+            margin: 10px 0;
+            text-decoration: none;
+            color: #4a90e2;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #e2e2e2;
+        }
+
+        .sidebar .footer-text {
+            font-size: 14px;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            flex: 1;
+            margin: 20px;
+            overflow: hidden;
+        }
+
+        input[type="url"], input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            margin-top: 12px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #4a90e2;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        .admin-container {
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: calc(100% - 140px);
+            margin-top: 10px;
+            display: none;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #fullscreenButton {
+            background-color: #28a745;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+        }
+
+        #fullscreenButton:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container active" id="mainContainer">
+        <div class="sidebar" id="sidebar">
+            <div id="gameList">
+                <h2>Game Links</h2>
+            </div>
+            <div class="footer-text">
+                Not seeing your favorite games? Email <a href="mailto:yarden.russ@gmail.com">yarden.russ@gmail.com</a> with your website.
+            </div>
+        </div>
+
+        <div class="main-container" id="mainContainerContent">
+            <div class="iframe-container" id="iframeContainer">
+                <iframe id="gameIframe" onerror="openInNewTab()"></iframe>
+                <button id="fullscreenButton" onclick="toggleFullscreen()">Full Screen</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="password-container" id="passwordContainer">
+        <h2>Enter Admin Password</h2>
+        <input type="password" id="adminPassword" placeholder="Password">
+        <button onclick="checkPassword()">Enter</button>
+    </div>
+
+    <div class="admin-container" id="adminContainer">
+        <h2>Admin Settings</h2>
+
+        <label>New Game URL:</label>
+        <input type="url" id="newGameUrl" placeholder="https://newgame.com">
+        <input type="text" id="newGameName" placeholder="Game Name">
+        <button onclick="addGame()">Add Game</button>
+
+        <label>Button Color:</label>
+        <input type="color" id="buttonColor" value="#4a90e2">
+        <button onclick="changeButtonColor()">Change Button Color</button>
+
+        <label>Background Color:</label>
+        <input type="color" id="bgColor" value="#ffffff">
+        <button onclick="changeBackgroundColor()">Change Background Color</button>
+
+        <h3>Change Admin Password</h3>
+        <input type="password" id="newPassword" placeholder="New Password">
+        <input type="password" id="confirmPassword" placeholder="Confirm New Password">
+        <button onclick="changePassword()">Update Password</button>
+
+        <button onclick="closeAdmin()">Close Admin</button>
+    </div>
+
+    <script>
+        let adminPassword = "123011";
+        let games = JSON.parse(localStorage.getItem("games")) || [
+            { name: "Basketball Stars", url: "https://basketball-stars.co/" },
+            { name: "Snowrider", url: "https://snow-rider.io/" },
+            { name: "Uno Online", url: "https://unoonline.io/" },
+            { name: "Uno Online.co", url: "https://unoonline.co/" },
+            { name: "Slope", url: "https://slope.ee/" },
+            { name: "Google Snake Game", url: "https://googlesnakegame.com/" },
+            { name: "Shell Shockers", url: "https://deathegg.life/" },
+            { name: "Yo-Yoo Games", url: "https://yo-yoo.co.il/" }
+        ];
+
+        function saveGames() {
+            localStorage.setItem("games", JSON.stringify(games));
+        }
+
+        function loadGames() {
+            const gameList = document.getElementById("gameList");
+            gameList.innerHTML = "<h2>Game Links</h2>"; 
+            games.forEach(game => {
+                const gameLink = document.createElement("a");
+                gameLink.textContent = game.name;
+                gameLink.href = "#";
+                gameLink.dataset.url = game.url;
+                gameLink.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    loadGameUrl(game.url);
+                });
+
+                gameList.insertBefore(gameLink, gameList.firstChild.nextSibling);
+            });
+        }
+
+        function addGame() {
+            const gameUrl = document.getElementById("newGameUrl").value;
+            const gameName = document.getElementById("newGameName").value;
+            if (gameUrl && gameName) {
+                games.unshift({ name: gameName, url: gameUrl }); 
+                saveGames();
+                loadGames();
+                document.getElementById("newGameUrl").value = "";
+                document.getElementById("newGameName").value = "";
+            } else {
+                alert("Please enter both game name and URL.");
+            }
+        }
+
+        function loadGameUrl(url) {
+            const iframeContainer = document.getElementById("iframeContainer");
+            const gameIframe = document.getElementById("gameIframe");
+            const fullscreenButton = document.getElementById("fullscreenButton");
+
+            iframeContainer.style.display = "block";
+            gameIframe.src = url;
+            fullscreenButton.style.display = "block";
+        }
+
+        function toggleFullscreen() {
+            const iframeContainer = document.getElementById("iframeContainer");
+
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                iframeContainer.requestFullscreen();
+                document.getElementById("fullscreenButton").style.display = "none";
+            }
+        }
+
+        document.addEventListener("fullscreenchange", () => {
+            const fullscreenButton = document.getElementById("fullscreenButton");
+            if (!document.fullscreenElement) {
+                fullscreenButton.style.display = "block";
+            }
+        });
+
+        function checkPassword() {
+            const password = document.getElementById("adminPassword").value;
+            if (password === adminPassword) {
+                document.getElementById("passwordContainer").classList.remove("active");
+                document.getElementById("adminContainer").classList.add("active");
+                document.getElementById("adminPassword").value = "";
+            } else {
+                alert("Incorrect password.");
+            }
+        }
+
+        function changePassword() {
+            const newPassword = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            if (newPassword && confirmPassword) {
+                if (newPassword === confirmPassword) {
+                    adminPassword = newPassword;
+                    alert("Password updated successfully.");
+                    document.getElementById("newPassword").value = ""; 
+                    document.getElementById("confirmPassword").value = ""; 
+                } else {
+                    alert("Passwords do not match. Please try again.");
+                }
+            } else {
+                alert("Please fill in both password fields.");
+            }
+        }
+
+        function changeButtonColor() {
+            const buttonColor = document.getElementById("buttonColor").value;
+            document.querySelectorAll("button").forEach(button => {
+                button.style.backgroundColor = buttonColor;
+            });
+        }
+
+        function changeBackgroundColor() {
+            const bgColor = document.getElementById("bgColor").value;
+            document.getElementById("mainContainerContent").style.backgroundColor = bgColor;
+        }
+
+        function closeAdmin() {
+            document.getElementById("adminContainer").classList.remove("active");
+            document.getElementById("mainContainer").classList.add("active");
+        }
+
+        window.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'y') {
+                event.preventDefault();
+                document.getElementById("mainContainer").classList.remove("active");
+                document.getElementById("passwordContainer").classList.add("active");
+            }
+        });
+
+        window.onload = loadGames;
+    </script>
+</body>
+</html>
